@@ -4,15 +4,17 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] List<GameObject>  pieces;
+    [SerializeField] private List<GameObject>  pieces;
     [SerializeField] private int shuffleCount;
         
-    List<Vector2> startPosition;
-    GameObject   nowSelectPiece;
+    private List<Vector2> startPosition;
+    private GameObject   nowSelectPiece;
 
     private void Start( )
     {
-        startPosition = new List<Vector2>();
+        startPosition = pieces.ConvertAll
+            (piece => (Vector2)piece.transform.position);
+
         ShufflePanel();
     }
 
@@ -33,11 +35,11 @@ public class GameManager : MonoBehaviour
             Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
             //Vector2.zero : 指定された（今回だったらクリックされた場所）の点を返す
-            RaycastHit2D raycast = Physics2D.Raycast(worldPosition, Vector2.zero);
+            RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero);
 
-            if (raycast)
+            if (hit)
             {
-                GameObject hitPiese = raycast.collider.gameObject;
+                GameObject hitPiese = hit.collider.gameObject;
 
                 if (nowSelectPiece == null) 
                 { 
@@ -46,8 +48,7 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     //二枚目は位置を入れ替えて、選択状態を解除
-                    (hitPiese.transform.position, nowSelectPiece.transform.position)
-                        = (nowSelectPiece.transform.position, hitPiese.transform.position);
+                    SwapPiecePosition(hitPiese.transform , nowSelectPiece.transform);
 
                     nowSelectPiece = null;
 
@@ -58,6 +59,18 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+    }
+
+
+    /// <summary>
+    /// 入れ替え処理
+    /// </summary>
+    /// <param name="pieceA"></param>
+    /// <param name="pieceB"></param>
+    private void SwapPiecePosition(Transform pieceA , Transform pieceB)
+    {
+        (pieceA.transform.position, pieceB.transform.position)
+            = (pieceB.transform.position, pieceA.transform.position);
     }
 
 
@@ -78,8 +91,7 @@ public class GameManager : MonoBehaviour
             int indexA = Random.Range(0, pieces.Count);
             int indexB = Random.Range(0, pieces.Count);
 
-            (pieces[indexA].transform.position, pieces[indexB].transform.position)
-                = (pieces[indexB].transform.position, pieces[indexA].transform.position);
+            SwapPiecePosition(pieces[indexA].transform , pieces[indexB].transform);
         }
     }
 
@@ -89,19 +101,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private bool IsClear()
     {
-        for(int i = 0; i < pieces.Count; i++)
-        {
-            Vector2 position = pieces[i].transform.position;
-
-            if (startPosition[i] != position)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return pieces.TrueForAll
+            (piece => startPosition[pieces.IndexOf(piece)] 
+             == (Vector2)piece.transform.position);
     }
-
-
-
 }

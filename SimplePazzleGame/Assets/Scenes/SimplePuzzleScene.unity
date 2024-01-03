@@ -269,7 +269,7 @@ MonoBehaviour:
   - {fileID: 2131084572}
   - {fileID: 584900167}
   - {fileID: 883336771}
-  shuffleCount: 2
+  shuffleCount: 3
 --- !u!1 &584900167
 GameObject:
   m_ObjectHideFlags: 0
